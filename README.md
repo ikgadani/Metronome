@@ -2,15 +2,15 @@
 
 QNX Neutrino is a microkernel-based RTOS that supports:
 
-  Multithreading
+    Multithreading
 
-  Message passing
+    Message passing
 
-  Pulse events
+    Pulse events
 
-  Timers
+    Timers
 
-Custom device drivers (resource managers)
+    Custom device drivers (resource managers)
 
 
 This uses these features to implement:
@@ -24,18 +24,19 @@ This uses these features to implement:
 
 1. Multithreaded Resource Manager
 
-The metronome program is a multi-threaded application:
+   The metronome program is a multi-threaded application:
 
-Main thread (Resource Manager): Listens for user commands through device I/O (e.g. echo pause 4 > /dev/local/metronome).
+        Main thread (Resource Manager): Listens for user commands through device I/O (e.g. echo pause 4 > /dev/local/metronome).
 
-Metronome thread: Uses a QNX interval timer to output patterns at the correct intervals.
+        Metronome thread: Uses a QNX interval timer to output patterns at the correct intervals.
 
 2. Device Simulation (/dev/local/metronome)
-QNX lets you write custom resource managers that act like files. Your program registers /dev/local/metronome so that:
 
-cat, echo, and other standard I/O commands can interact with it.
+   QNX lets you write custom resource managers that act like files. Your program registers /dev/local/metronome so that:
 
-You define handlers for I/O functions like io_write() and io_read() to parse and respond to commands.
+        cat, echo, and other standard I/O commands can interact with it.
+
+        You define handlers for I/O functions like io_write() and io_read() to parse and respond to commands.
 
 
 🧩 Key Features Explained
