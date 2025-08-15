@@ -1,4 +1,4 @@
-🌐 QNX Neutrino Basics in This Context
+🌐 QNX Neutrino Basics
 
 QNX Neutrino is a microkernel-based RTOS that supports:
 
