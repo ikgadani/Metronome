@@ -1,114 +1,127 @@
-🌐 QNX Neutrino Basics
+🎵 QNX Neutrino Metronome Resource Manager
 
-QNX Neutrino is a microkernel-based RTOS that supports:
+A real-time metronome implemented in C for the QNX Neutrino RTOS, 
+using a custom Resource Manager to simulate rhythmic beats via a virtual device /dev/local/metronome.
 
-    Multithreading
+✨ Features
 
-    Message passing
+    🖥 Custom Device Interface — Fully functional resource manager accessible via /dev/local/metronome
 
-    Pulse events
+    ⏱ Accurate Real-Time Timing — Uses POSIX interval timers to produce beat patterns
 
-    Timers
+    🔄 On-the-Fly Updates — Change BPM and time signatures while running
 
-    Custom device drivers (resource managers)
+    ⏸ Mid-Measure Pausing — Resume exactly on the next beat
 
+    🛡 Robust Error Handling — Ignores invalid inputs without crashing
 
-This uses these features to implement:
+    📝 Acceptance Test Script — Automates functional verification
 
-  A metronome that visually outputs rhythmic patterns based on BPM and time signature.
+    📦 Installation & Setup
 
-  A resource manager interface to control this metronome through commands like pause, start, set, etc.
+Prerequisites
 
+    QNX Neutrino RTOS (with Momentics IDE or QNX SDK)
 
-🧠 How It Works: Components & Functionality
+    GCC toolchain for QNX
 
-1. Multithreaded Resource Manager
+    Familiarity with QNX resource managers and POSIX APIs
 
-   The metronome program is a multi-threaded application:
-
-        Main thread (Resource Manager): Listens for user commands through device I/O (e.g. echo pause 4 > /dev/local/metronome).
-
-        Metronome thread: Uses a QNX interval timer to output patterns at the correct intervals.
-
-2. Device Simulation (/dev/local/metronome)
-
-   QNX lets you write custom resource managers that act like files. Your program registers /dev/local/metronome so that:
-
-        cat, echo, and other standard I/O commands can interact with it.
-
-        You define handlers for I/O functions like io_write() and io_read() to parse and respond to commands.
-
-
-🧩 Key Features Explained
-
-  🧾 Command Parsing
-
-  Examples:
+Build
     
-    echo pause 3 > /dev/local/metronome → sends "pause 3" to the resmgr.
-  
-    cat /dev/local/metronome → triggers a status read from the resource manager.
+    cd Metronome
+    make
 
-    The io_write() handler:
+🚀 Usage
+Start the Metronome
+    
+    ./metronome <bpm> <ts-top> <ts-bottom>
 
-    Parses the string
 
-    Recognizes commands like pause, start, stop, set, quit
+Example:
 
-    Sends pulses or messages to the metronome thread accordingly
+    ./metronome 120 2 4
 
-🔁 Timer & Output
 
-The metronome thread does:
+This runs the metronome at 120 BPM in 2/4 time.
 
-    Retrieves BPM and time signature values
+Available Commands
 
-    Looks up a data table mapping (like |1&2&) for the beat pattern
+Command, Example, and Description
 
-    Sets up a POSIX timer or uses QNX’s timer_create(), and on every tick:
+    Help -->
+        Example: cat /dev/local/metronome-help 
+        Description: Show API usage instructions
+        
+    Status -->	
+        Example: cat /dev/local/metronome 
+        Description: Show current BPM, time signature, and interval settings
+        
+    Pause -->	
+        Example: echo pause 4 > /dev/local/metronome	
+        Description: Pause for 1–9 seconds, resuming on the next beat
+        
+    Set	echo --> 
+        Example: set 200 5 4 > /dev/local/metronome	
+        Description: Change BPM and time signature
+        
+    Stop -->  
+        Example: echo stop > /dev/local/metronome	
+        Description: Stop beat output (process still runs)
+    
+    Start -->    
+        Example: echo start > /dev/local/metronome	
+        Description: Resume from stopped state
+    
+    Quit -->  
+        Example: echo quit > /dev/local/metronome	
+        Description: Gracefully terminate the process
 
-    Outputs the next character in the rhythm
+🧪 Acceptance Testing
 
-    Waits the calculated interval:
-      
-      interval = (60 / BPM) / intervalsPerBeat
+Run the included test script:
 
-⏸️ Pause Functionality
+    ksh acceptance-test.ksh
 
-When you echo pause 4 > /dev/local/metronome:
 
-    The resource manager parses this
+Covers:
 
-    Sends a pulse or message to the metronome thread
+~ Command parsing & validation
 
-    The metronome thread pauses its timer or delays output for 4 seconds
+~ BPM/time signature changes
 
-    Then resumes on the next beat, not necessarily the next measure
+~ Pause behavior
 
-    This uses QNX's MsgSendPulse() or MsgSend() between threads/channels to signal events.
+~ Error handling for invalid commands
 
-🛑 Start / Stop / Quit
+~ Graceful shutdown
 
-Each command changes the internal state:
 
-    start → starts the timer/output thread
+🛠 Architecture Overview: 
 
-    stop → halts the output but keeps the process alive
+    +---------------------------+
+    | Resource Manager Thread   |
+    | - Parses commands         |
+    | - Handles /dev I/O        |
+    | - Sends pulses/messages   |
+    +-------------+-------------+
+                  |
+                  v
+    +---------------------------+
+    | Metronome Timer Thread    |
+    | - POSIX interval timers   |
+    | - Beat pattern output     |
+    | - Pause/resume handling   |
+    +---------------------------+
 
-    quit → gracefully destroys timers, cancels threads, closes/detaches channels, and exits
+📚 Learning Outcomes
 
-📜 Help and Status
+~ Developing QNX resource managers (resmgr_*, iofunc_*)
 
-Two special device files:
+~ Implementing inter-thread communication with pulses/messages
 
-    /dev/local/metronome – supports cat to print current settings (e.g., BPM, time signature, interval timing)
+~ Writing precise real-time scheduling with interval timers
 
-    /dev/local/metronome-help – outputs help text (API documentation)
+~ Robust POSIX I/O device handling in an embedded environment
 
-🧪 Acceptance Tests & QNX Integration
-
-You test the metronome through scripts and terminal input, not GUI.
-
-QNX command-line utilities like cat, echo, pidin are used to interact with your metronome and verify behavior.
-
-Each test shows your metronome's ability to behave like a real-time, responsive system.
+~ Applying microkernel principles for reliability and modularity
